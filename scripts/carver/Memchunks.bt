@@ -1,0 +1,62 @@
+//--------------------------------------
+//--- 010 Editor v6.0.1 Binary Template
+//
+// File:
+// Author:
+// Revision:
+// Purpose:
+//--------------------------------------
+
+struct MemChunk {
+    ubyte marker[8];
+    uint64 start_address<format=hex>;
+    uint64 end_address<format=hex>;
+    uint64 compressed_length;
+    uint64 uncompressed_length;
+    uint64 skipped_length;
+    unsigned char checksum[32];
+};
+
+local uchar t_marker[8];
+
+local TFindResults r = FindAll("MEM");
+local int i = 0;
+
+for (i = 0; i < r.count; i++) {
+    ReadBytes(t_marker, r.start[i], 8);
+
+    if (t_marker[0] == 'M' &&
+        t_marker[1] == 'E' &&
+        t_marker[2] == 'M' &&
+        t_marker[3] == 0xf1 &&
+        t_marker[4] == 0x88 &&
+        t_marker[5] == 0x15 &&
+        t_marker[6] == 0x08 &&
+        t_marker[7] == 0x5c)
+    {
+        FSeek(r.start[i]);
+
+        MemChunk chunk<name="Compressed Memory Chunk">;
+    }
+}
+
+r = FindAll("M3M");
+i = 0;
+
+for (i = 0; i < r.count; i++) {
+    ReadBytes(t_marker, r.start[i], 8);
+
+    if (t_marker[0] == 'M' &&
+        t_marker[1] == '3' &&
+        t_marker[2] == 'M' &&
+        t_marker[3] == 0xf1 &&
+        t_marker[4] == 0x88 &&
+        t_marker[5] == 0x15 &&
+        t_marker[6] == 0x08 &&
+        t_marker[7] == 0x5c)
+    {
+        FSeek(r.start[i]);
+
+        MemChunk chunk<name="Moved Memory Chunk">;
+    }
+}

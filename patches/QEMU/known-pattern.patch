@@ -1,0 +1,26 @@
+*** ./util/oslib-posix.c	Mon Apr 27 16:08:29 2015
+--- ./util/oslib-posix.c	Mon Jun 22 17:48:37 2015
+***************
+*** 126,131 ****
+--- 126,133 ----
+  /* alloc shared memory pages */
+  void *qemu_anon_ram_alloc(size_t size, uint64_t *alignment)
+  {
++     printf("qemu_anon_ram_alloc(%lu, %llu)\n", size, *alignment);
++ 
+      size_t align = QEMU_VMALLOC_ALIGN;
+      size_t total = size + align - getpagesize();
+      void *ptr = mmap(0, total, PROT_READ | PROT_WRITE,
+***************
+*** 149,154 ****
+--- 151,160 ----
+          munmap(ptr + size, total - size);
+      }
+  
++     for (void* p = ptr; p < ptr + total; p += 4) {
++         *((int*)p) = 0x78563412;
++     }
++ 
+      trace_qemu_anon_ram_alloc(size, ptr);
+      return ptr;
+  }

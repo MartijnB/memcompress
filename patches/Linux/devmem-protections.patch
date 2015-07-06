@@ -1,0 +1,47 @@
+*** ./linux-3.18.14/drivers/char/mem.c	Wed May 20 17:04:50 2015
+--- ./linux-3.18.14/drivers/char/mem.c	Mon Jul  6 03:01:08 2015
+***************
+*** 58,88 ****
+  }
+  #endif
+  
+- #ifdef CONFIG_STRICT_DEVMEM
+- static inline int range_is_allowed(unsigned long pfn, unsigned long size)
+- {
+- 	u64 from = ((u64)pfn) << PAGE_SHIFT;
+- 	u64 to = from + size;
+- 	u64 cursor = from;
+- 
+- 	while (cursor < to) {
+- 		if (!devmem_is_allowed(pfn)) {
+- 			printk(KERN_INFO
+- 		"Program %s tried to access /dev/mem between %Lx->%Lx.\n",
+- 				current->comm, from, to);
+- 			return 0;
+- 		}
+- 		cursor += PAGE_SIZE;
+- 		pfn++;
+- 	}
+- 	return 1;
+- }
+- #else
+  static inline int range_is_allowed(unsigned long pfn, unsigned long size)
+  {
+  	return 1;
+  }
+- #endif
+  
+  void __weak unxlate_dev_mem_ptr(unsigned long phys, void *addr)
+  {
+--- 58,67 ----
+***************
+*** 102,109 ****
+  	if (p != *ppos)
+  		return 0;
+  
+- 	if (!valid_phys_addr_range(p, count))
+- 		return -EFAULT;
+  	read = 0;
+  #ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
+  	/* we don't have page 0 mapped on sparc and m68k.. */
+--- 81,86 ----
