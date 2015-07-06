@@ -1,0 +1,30 @@
+# Default boot option to use
+DEFAULT menu.c32
+
+# Prompt user for selection
+PROMPT 0
+
+# Menu Configuration
+MENU WIDTH 80
+MENU MARGIN 10
+MENU PASSWORDMARGIN 3
+MENU ROWS 12
+MENU TABMSGROW 18
+MENU CMDLINEROW 18
+MENU ENDROW 24
+MENU PASSWORDROW 11
+MENU TIMEOUTROW 20
+MENU TITLE Main Menu
+
+LABEL meminfo
+    MENU LABEL Memory Information
+    KERNEL meminfo.c32
+
+LABEL memchunkfinder
+    MENU LABEL Find (compressed) memory chunks
+    KERNEL memchunkfinder.c32
+
+LABEL memcompress_openwrt
+    MENU LABEL Compress Memory and Boot Linux (OpenWRT)
+    KERNEL memcompress.c32
+    APPEND /openwrt/openwrt-ramfs.bzImage
