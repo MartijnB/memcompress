@@ -1,11 +1,10 @@
-#ifndef _MOD_UTIL_H
-#define _MOD_UTIL_H
+#ifndef _SHARED_UTIL_H
+#define _SHARED_UTIL_H
 
-#include <com32.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <syslinux/memscan.h>
 
-int create_args(char *cmdline, int* d_argc, char*** d_argv);
+#undef syslinux_dump_memmap
+
+void syslinux_dump_memmap(struct syslinux_memmap *memmap);
 
 #endif

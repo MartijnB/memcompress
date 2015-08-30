@@ -7,13 +7,18 @@
 
 #include "../shared/mem.h"
 
+#define MAGIC_VALUE 0x78563412
+#define MAGIC_VALUE_SIZE sizeof(int)
+
+// Module to scan the memory of a system for a certain magic value.
+// Print how many bytes are equal to the magic value and how many are not.
 int main(void)
 {
 	void* esp_p = NULL;
 
     load_memmap();
 
-    uint64_t mem_max_address = get_max_usable_mem_addres();
+    ptr_t mem_max_address = get_max_usable_mem_addres();
 
     printf("Current address: %8p\n", get_current_eip());
     printf("Current ESP: %8p\n", (void*)&esp_p);
@@ -22,28 +27,28 @@ int main(void)
     uint64_t valid_bytes = 0;
     uint64_t invalid_bytes = 0;
 
-    uint64_t mem_trashed_start = ~0LL;
-    uint64_t mem_trashed_end = ~0LL;
+    // Use UINT64_MAX_VALUE to indicate the start of end is not (yet) found
+    ptr_t mem_trashed_start = UINT64_MAX_VALUE;
+    ptr_t mem_trashed_end = UINT64_MAX_VALUE;
 
-    for (uint64_t p = 0; p < mem_max_address && (IS_64BIT() || p <= ~0u); p += sizeof(int)) {
-        if (*((int*)p) == 0x78563412) {
-        //if (*((int*)p) == 0xF0F0F0F0) {
-            valid_bytes += sizeof(int);
+    for (ptr_t p = 0; p < (mem_max_address - MAGIC_VALUE_SIZE) && IS_VALID_POINTER(p); p += MAGIC_VALUE_SIZE) {
+        if (MEM_READ_UINT32(p) == MAGIC_VALUE) {
+            valid_bytes += MAGIC_VALUE_SIZE;
 
-            if (mem_trashed_start != ~0ULL) {
+            if (mem_trashed_start != UINT64_MAX_VALUE) {
                 printf("Found trashed memory: %016" PRIx64 " - %016"PRIx64"\n", mem_trashed_start, mem_trashed_end);
 
-                mem_trashed_start = ~0ULL;
+                mem_trashed_start = UINT64_MAX_VALUE;
             }
         }
         else {
-            invalid_bytes += sizeof(int);
+            invalid_bytes += MAGIC_VALUE_SIZE;
 
-            if (mem_trashed_start == ~0ULL) {
+            if (mem_trashed_start == UINT64_MAX_VALUE) {
                 mem_trashed_start = p;
             }
 
-            mem_trashed_end = p + sizeof(int);
+            mem_trashed_end = p + MAGIC_VALUE_SIZE;
         }
     }
 

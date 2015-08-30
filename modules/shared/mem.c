@@ -11,11 +11,13 @@ static const char *const e820_types[] = {
 struct e820_data mem_regions[128];
 unsigned int mem_region_count = 0;
 
-volatile void* get_current_eip(void) {
+volatile void* get_current_eip(void)
+{
     return __builtin_return_address(0);
 }
 
-const char* get_mem_size(uint64_t size) {
+const char* get_mem_size(uint64_t size)
+{
   static char mem_size[20];
 
   if(!size) {
@@ -37,7 +39,8 @@ const char* get_mem_size(uint64_t size) {
   return mem_size;
 }
 
-const char* get_mem_ksize(uint64_t size) {
+const char* get_mem_ksize(uint64_t size)
+{
   static char mem_size[20];
 
   if(!size) {
@@ -47,13 +50,14 @@ const char* get_mem_ksize(uint64_t size) {
     sprintf(mem_size, "%lluK", (size >> 10) + 1);
   }
   else {
-    sprintf(mem_size, "1K", size);
+    sprintf(mem_size, "1K");
   }
 
   return mem_size;
 }
 
-void load_memmap(void) {
+void load_memmap(void)
+{
     com32sys_t ireg, oreg;
     struct e820_data ed;
     void *low_ed;
@@ -105,7 +109,8 @@ void load_memmap(void) {
     lfree(low_ed);
 }
 
-const struct e820_data* get_mem_region(uint64_t mem_address) {
+const struct e820_data* get_mem_region(ptr_t mem_address)
+{
     for (unsigned int mem_region_i = 0; mem_region_i < mem_region_count; mem_region_i++) {
         if (mem_regions[mem_region_i].base <= mem_address && mem_address < mem_regions[mem_region_i].base + mem_regions[mem_region_i].len) {
             return &mem_regions[mem_region_i];
@@ -115,7 +120,8 @@ const struct e820_data* get_mem_region(uint64_t mem_address) {
     return 0;
 }
 
-short get_next_mem_region(struct e820_data** current_mem_region, short order) {
+short get_next_mem_region(struct e820_data** current_mem_region, short order)
+{
     if (order == MEM_ORDER_OFFSET) {
         bool next = (*current_mem_region == 0) ? true : false;
 
@@ -186,7 +192,8 @@ short get_next_mem_region(struct e820_data** current_mem_region, short order) {
     return 0;
 }
 
-void print_sorted_memmap(short order) {
+void print_sorted_memmap(short order)
+{
     struct e820_data* current_mem_region = 0;
 
     unsigned int mem_region_i = 0;
@@ -220,7 +227,8 @@ void print_sorted_memmap(short order) {
 
 struct e820_data* g_last_used_mem_region;
 
-unsigned int is_readable_mem_address(uint64_t mem_address) {
+unsigned int is_readable_mem_address(ptr_t mem_address)
+{
     //Optimalisation so we dont have to lookup the correct mem region every call
     if (g_last_used_mem_region->base <= mem_address && mem_address < g_last_used_mem_region->base + g_last_used_mem_region->len) {
         if (g_last_used_mem_region->type != E820_TYPE_UNUSABLE && g_last_used_mem_region->type != E820_TYPE_RESERVED) {
@@ -230,12 +238,6 @@ unsigned int is_readable_mem_address(uint64_t mem_address) {
 
     for (unsigned int mem_region_i = 0; mem_region_i < mem_region_count; mem_region_i++) {
         if (mem_regions[mem_region_i].base <= mem_address && mem_address < mem_regions[mem_region_i].base + mem_regions[mem_region_i].len) {
-            //printf("Found region %x (%016" PRIx64 " - %016"PRIx64") for %016"PRIx64 "\n", 
-            //    mem_region_i, 
-            //    mem_regions[mem_region_i].base, 
-            //    mem_regions[mem_region_i].base + mem_regions[mem_region_i].len,
-            //    mem_address);
-
             if (mem_regions[mem_region_i].type != E820_TYPE_UNUSABLE && mem_regions[mem_region_i].type != E820_TYPE_RESERVED) {
                 g_last_used_mem_region = &mem_regions[mem_region_i];
 
@@ -247,7 +249,8 @@ unsigned int is_readable_mem_address(uint64_t mem_address) {
     return 0;
 }
 
-unsigned int is_usable_mem_address(uint64_t mem_address) {
+unsigned int is_usable_mem_address(ptr_t mem_address)
+{
     //Optimalisation so we dont have to lookup the correct mem region every call
     if (g_last_used_mem_region->base <= mem_address && mem_address < g_last_used_mem_region->base + g_last_used_mem_region->len) {
         if (g_last_used_mem_region->type == E820_TYPE_USABLE) {
@@ -265,12 +268,6 @@ unsigned int is_usable_mem_address(uint64_t mem_address) {
 
     for (unsigned int mem_region_i = 0; mem_region_i < mem_region_count; mem_region_i++) {
         if (mem_regions[mem_region_i].base <= mem_address && mem_address < mem_regions[mem_region_i].base + mem_regions[mem_region_i].len) {
-            //printf("Found region %x (%016" PRIx64 " - %016"PRIx64") for %016"PRIx64 "\n", 
-            //    mem_region_i, 
-            //    mem_regions[mem_region_i].base, 
-            //    mem_regions[mem_region_i].base + mem_regions[mem_region_i].len,
-            //    mem_address);
-
             if (mem_regions[mem_region_i].type == E820_TYPE_USABLE) {
                 g_last_used_mem_region = &mem_regions[mem_region_i];
 
@@ -282,8 +279,9 @@ unsigned int is_usable_mem_address(uint64_t mem_address) {
     return 0;
 }
 
-uint64_t get_max_usable_mem_addres(void) {
-    static uint64_t max_address = 0;
+ptr_t get_max_usable_mem_addres(void)
+{
+    static ptr_t max_address = 0;
 
     if (max_address == 0) {
         for (unsigned int mem_region_i = 0; mem_region_i < mem_region_count; mem_region_i++) {
@@ -296,14 +294,4 @@ uint64_t get_max_usable_mem_addres(void) {
     }
 
     return max_address;
-}
-
-// Normally this function is not compiled in
-void sl_dump_memmap(struct syslinux_memmap *memmap) {
-    printf("%10s %10s %10s\n" "--------------------------------\n", "Start", "Length", "Type");
-    while (memmap->next) {
-        printf("0x%08x 0x%08x %10d\n", memmap->start, memmap->next->start - memmap->start, memmap->type);
-
-        memmap = memmap->next;
-    }
 }

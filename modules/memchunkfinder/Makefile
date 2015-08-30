@@ -15,5 +15,8 @@ $(MODULE).elf: $(MODULE).o ../shared/mem.o $(LIBS) $(C_LIBS) $(COM32LD)
 .PHONY: clean
 
 clean:
-	rm -f $(MODULE).o
+	rm -f ../shared/*.o
+
+	rm -f *.o
 	rm -f $(MODULE).elf
+	rm -f $(MODULE).c32

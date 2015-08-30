@@ -13,5 +13,8 @@ memwrite.elf: memwrite.o ../shared/mem.o $(LIBS) $(C_LIBS) $(COM32LD)
 .PHONY: clean
 
 clean:
-	rm -f memwrite.o
+	rm -f ../shared/*.o
+
+	rm -f *.o
 	rm -f memwrite.elf
+	rm -f memwrite.c32
